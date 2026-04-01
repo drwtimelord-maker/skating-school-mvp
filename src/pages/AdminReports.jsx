@@ -1,12 +1,30 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Filter } from 'lucide-react';
+import { supabase } from '../supabase';
 
 export default function AdminReports() {
-    const mockReports = [
-        { id: 1, student: 'Emma Watson', class: 'Basic Skills 1', instructor: 'Sarah', date: 'Oct 12, 2023' },
-        { id: 2, student: 'Noah Smith', class: 'Basic Skills 2', instructor: 'Mike', date: 'Oct 11, 2023' },
-        { id: 3, student: 'Olivia Jones', class: 'Basic Skills 1', instructor: 'Sarah', date: 'Oct 11, 2023' },
-    ];
+    const [reports, setReports] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function loadAllReports() {
+            // Query reports and join their related dimensional tables
+            const { data } = await supabase
+                .from('feedback_reports')
+                .select(`
+          id,
+          session_date,
+          students (name),
+          classes (name),
+          profiles:instructor_id (full_name)
+        `)
+                .order('session_date', { ascending: false });
+
+            if (data) setReports(data);
+            setLoading(false);
+        }
+        loadAllReports();
+    }, []);
 
     return (
         <div>
@@ -33,17 +51,23 @@ export default function AdminReports() {
                         </tr>
                     </thead>
                     <tbody>
-                        {mockReports.map(report => (
-                            <tr key={report.id}>
-                                <td style={{ color: 'var(--text-muted)' }}>{report.date}</td>
-                                <td style={{ fontWeight: 500 }}>{report.student}</td>
-                                <td>{report.class}</td>
-                                <td>{report.instructor}</td>
-                                <td>
-                                    <a href={`/report/${report.id}`} style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 500, fontSize: '0.875rem' }}>View Report</a>
-                                </td>
-                            </tr>
-                        ))}
+                        {loading ? (
+                            <tr><td colSpan="5" style={{ padding: '2rem' }}>Loading reports...</td></tr>
+                        ) : reports.length === 0 ? (
+                            <tr><td colSpan="5" style={{ padding: '2rem' }}>No evaluations have been submitted yet.</td></tr>
+                        ) : (
+                            reports.map(report => (
+                                <tr key={report.id}>
+                                    <td style={{ color: 'var(--text-muted)' }}>{report.session_date}</td>
+                                    <td style={{ fontWeight: 500 }}>{report.students?.name}</td>
+                                    <td>{report.classes?.name}</td>
+                                    <td>{report.profiles?.full_name}</td>
+                                    <td>
+                                        <a href={`/report/${report.id}`} style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 500, fontSize: '0.875rem' }}>View Report</a>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
                     </tbody>
                 </table>
             </div>

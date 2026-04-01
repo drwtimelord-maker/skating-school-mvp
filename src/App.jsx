@@ -12,13 +12,10 @@ function App() {
             <div className="app-container">
                 {/* Simple navigation to make development/testing easier */}
                 <nav className="dev-nav">
-                    <ul>
+                    <ul style={{ margin: 0, padding: 0 }}>
                         <li><Link to="/login">Login</Link></li>
                         <li><Link to="/dashboard">Dashboard</Link></li>
-                        <li><Link to="/roster/1">Class Roster</Link></li>
-                        <li><Link to="/feedback/1">Give Feedback</Link></li>
                         <li><Link to="/admin">Admin Reports</Link></li>
-                        <li><Link to="/report/1">Printable Report</Link></li>
                     </ul>
                 </nav>
 
@@ -30,7 +27,7 @@ function App() {
                         <Route path="/roster/:classId" element={<ClassRoster />} />
                         <Route path="/feedback/:studentId" element={<StudentFeedback />} />
                         <Route path="/admin" element={<AdminReports />} />
-                        <Route path="/report/:studentId" element={<PrintableReport />} />
+                        <Route path="/report/:reportId" element={<PrintableReport />} />
                     </Routes>
                 </main>
             </div>

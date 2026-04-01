@@ -1,13 +1,32 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogIn } from 'lucide-react';
+import { supabase } from '../supabase';
 
 export default function Login() {
     const navigate = useNavigate();
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-        // Bypass auth for MVP frontend
+        setLoading(true);
+        setError('');
+
+        const { data, error: authError } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+        });
+
+        if (authError) {
+            setError(authError.message);
+            setLoading(false);
+            return;
+        }
+
+        // Check profile role if needed, or just redirect to dashboard
         navigate('/dashboard');
     };
 
@@ -22,6 +41,8 @@ export default function Login() {
                     <p style={{ color: 'var(--text-muted)' }}>Sign in to manage classes & feedback</p>
                 </div>
 
+                {error && <div style={{ background: 'var(--warning-bg)', color: 'var(--warning)', padding: '0.75rem', borderRadius: 'var(--radius)', marginBottom: '1rem', fontSize: '0.875rem' }}>{error}</div>}
+
                 <form onSubmit={handleLogin}>
                     <div className="input-group">
                         <label className="input-label" htmlFor="email">Email address</label>
@@ -30,6 +51,8 @@ export default function Login() {
                             type="email"
                             className="input-field"
                             placeholder="instructor@skate.school"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             required
                         />
                     </div>
@@ -41,12 +64,14 @@ export default function Login() {
                             type="password"
                             className="input-field"
                             placeholder="••••••••"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
                             required
                         />
                     </div>
 
-                    <button type="submit" className="btn" style={{ width: '100%', marginTop: '1rem' }}>
-                        Sign In
+                    <button type="submit" className="btn" style={{ width: '100%', marginTop: '1rem' }} disabled={loading}>
+                        {loading ? 'Signing in...' : 'Sign In'}
                     </button>
                 </form>
             </div>
