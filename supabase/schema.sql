@@ -87,6 +87,7 @@ alter table public.feedback_reports enable row level security;
 alter table public.feedback_skill_results enable row level security;
 
 -- Read policies
+create policy "Allow insert for auth users" on public.profiles for insert with check (auth.role() = 'authenticated' and auth.uid() = id);
 create policy "Allow read access to all authenticated users" on public.profiles for select using (auth.role() = 'authenticated');
 create policy "Allow read access to all authenticated users" on public.levels for select using (auth.role() = 'authenticated');
 create policy "Allow read access to all authenticated users" on public.skills for select using (auth.role() = 'authenticated');
