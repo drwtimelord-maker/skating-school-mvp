@@ -4,13 +4,15 @@
 create extension if not exists "uuid-ossp";
 
 -- 1. PROFILES
+drop table if exists public.profiles cascade;
 create table public.profiles (
-  id uuid references auth.users not null primary key,
+  id uuid references auth.users(id) on delete cascade not null primary key,
   full_name text not null,
   role text not null check (role in ('admin', 'instructor')),
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+-- Note: Policies are recreated further down
 -- 2. LEVELS
 create table public.levels (
   id uuid default gen_random_uuid() primary key,

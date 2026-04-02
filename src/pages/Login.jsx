@@ -18,18 +18,40 @@ export default function Login() {
     const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(false);
 
-    // Helper to check role and navigate
-    const routeUser = async (userId) => {
-        const { data: profile } = await supabase
+    // Helper to ensure profile exists, check role, and navigate
+    const ensureProfileAndRoute = async (user) => {
+        // Check if the profile already exists in public.profiles
+        const { data: profile, error: fetchError } = await supabase
             .from('profiles')
             .select('role')
-            .eq('id', userId)
+            .eq('id', user.id)
             .single();
 
-        if (profile?.role === 'admin') {
-            navigate('/admin');
+        let currentRole = profile?.role;
+
+        // If profile doesn't exist yet (e.g. they confirmed email later), create it now
+        if (!profile && user.user_metadata) {
+            const { full_name, role: metaRole } = user.user_metadata;
+
+            const { error: insertError } = await supabase.from('profiles').insert({
+                id: user.id,
+                full_name: full_name || 'New User',
+                role: metaRole || 'instructor'
+            });
+
+            if (insertError) {
+                setError('Login successful, but profile setup failed: ' + insertError.message);
+                setLoading(false);
+                return;
+            }
+            currentRole = metaRole;
+        }
+
+        // Route based on role
+        if (currentRole === 'admin') {
+            navigate('/admin/reports');
         } else {
-            navigate('/dashboard');
+            navigate('/instructor');
         }
     };
 
@@ -41,9 +63,17 @@ export default function Login() {
 
         if (isSignUp) {
             // --- SIGN UP FLOW ---
+            // We store the full_name and role inside options.data (user_metadata)
+            // so it's safely kept by Auth even if email confirmation prevents immediate login.
             const { data: authData, error: authError } = await supabase.auth.signUp({
                 email,
                 password,
+                options: {
+                    data: {
+                        full_name: fullName,
+                        role: role
+                    }
+                }
             });
 
             if (authError) {
@@ -52,25 +82,19 @@ export default function Login() {
                 return;
             }
 
-            if (authData?.user) {
-                // Create matching profile
-                const { error: profileError } = await supabase.from('profiles').insert({
-                    id: authData.user.id,
-                    full_name: fullName,
-                    role: role
-                });
-
-                if (profileError) {
-                    setError('Account created, but failed to save profile info: ' + profileError.message);
-                    setLoading(false);
-                    return;
-                }
-
-                setSuccess('Account created successfully! Logging you in...');
-                setTimeout(() => {
-                    routeUser(authData.user.id);
-                }, 1500);
+            // Check if we got an immediate session
+            if (authData?.session) {
+                // User is fully authenticated immediately (Email confirmations are OFF)
+                await ensureProfileAndRoute(authData.user);
+            } else if (authData?.user) {
+                // User is created but NOT authenticated yet (Email confirmations are ON)
+                setSuccess('Account created! Please check your email to verify your account before logging in.');
+                setLoading(false);
+                // Switch them back to login view to await their eventual return
+                setIsSignUp(false);
+                setPassword('');
             }
+
         } else {
             // --- LOGIN FLOW ---
             const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
@@ -85,13 +109,9 @@ export default function Login() {
             }
 
             if (authData?.user) {
-                await routeUser(authData.user.id);
+                // They are fully logged in. Ensure profile and route them!
+                await ensureProfileAndRoute(authData.user);
             }
-        }
-
-        // Only reset loading if we didn't redirect via success hook
-        if (!isSignUp || error) {
-            setLoading(false);
         }
     };
 
@@ -178,7 +198,7 @@ export default function Login() {
                         />
                     </div>
 
-                    <button type="submit" className="btn" style={{ width: '100%', marginTop: '1rem' }} disabled={loading || !!success}>
+                    <button type="submit" className="btn" style={{ width: '100%', marginTop: '1rem' }} disabled={loading}>
                         {loading ? 'Processing...' : isSignUp ? 'Sign Up' : 'Sign In'}
                     </button>
                 </form>

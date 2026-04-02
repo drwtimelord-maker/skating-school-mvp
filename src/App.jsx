@@ -14,8 +14,8 @@ function App() {
                 <nav className="dev-nav">
                     <ul style={{ margin: 0, padding: 0 }}>
                         <li><Link to="/login">Login</Link></li>
-                        <li><Link to="/dashboard">Dashboard</Link></li>
-                        <li><Link to="/admin">Admin Reports</Link></li>
+                        <li><Link to="/instructor">Dashboard</Link></li>
+                        <li><Link to="/admin/reports">Admin Reports</Link></li>
                     </ul>
                 </nav>
 
@@ -23,10 +23,10 @@ function App() {
                     <Routes>
                         <Route path="/" element={<Login />} />
                         <Route path="/login" element={<Login />} />
-                        <Route path="/dashboard" element={<InstructorDashboard />} />
+                        <Route path="/instructor" element={<InstructorDashboard />} />
                         <Route path="/roster/:classId" element={<ClassRoster />} />
                         <Route path="/feedback/:studentId" element={<StudentFeedback />} />
-                        <Route path="/admin" element={<AdminReports />} />
+                        <Route path="/admin/reports" element={<AdminReports />} />
                         <Route path="/report/:reportId" element={<PrintableReport />} />
                     </Routes>
                 </main>
