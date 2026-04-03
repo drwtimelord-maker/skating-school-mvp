@@ -15,11 +15,14 @@ drop table if exists public.skills cascade;
 drop table if exists public.levels cascade;
 drop table if exists public.profiles cascade;
 
+drop type if exists user_role cascade;
+create type user_role as enum ('instructor', 'admin');
+
 -- 1. PROFILES
 create table public.profiles (
   id uuid references auth.users(id) on delete cascade not null primary key,
   full_name text not null,
-  role text not null check (role in ('admin', 'instructor')),
+  role user_role not null default 'instructor',
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
