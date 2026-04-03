@@ -9,7 +9,6 @@ export default function ClassRoster() {
 
     const [classInfo, setClassInfo] = useState(null);
     const [students, setStudents] = useState([]);
-
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
@@ -17,58 +16,37 @@ export default function ClassRoster() {
         async function fetchRoster() {
             try {
                 const { data: { user } } = await supabase.auth.getUser();
-                if (!user) {
-                    navigate('/login');
-                    return;
-                }
+                if (!user) { navigate('/login'); return; }
 
-                // 1. Fetch class basic info
                 const { data: classData, error: classError } = await supabase
-                    .from('classes')
-                    .select('*, levels(name)')
-                    .eq('id', classId)
-                    .single();
-
+                    .from('classes').select('*, levels(name)').eq('id', classId).single();
                 if (classError) throw classError;
                 setClassInfo(classData);
 
-                // 2. Fetch enrollments mapped to students
                 const { data: enrollments, error: enrollError } = await supabase
                     .from('class_enrollments')
-                    .select(`
-            students (id, name, age)
-          `)
+                    .select('students (id, name, age)')
                     .eq('class_id', classId);
-
                 if (enrollError) throw enrollError;
 
                 if (enrollments && enrollments.length > 0) {
-                    // 3. Fetch feedback reports to determine if they've been evaluated already
                     const studentIds = enrollments.map(e => e.students.id);
                     const { data: reports, error: repsError } = await supabase
                         .from('feedback_reports')
                         .select('id, student_id')
                         .eq('class_id', classId)
                         .in('student_id', studentIds);
-
                     if (repsError) throw repsError;
 
-                    const mappedStudents = enrollments.map(e => {
+                    setStudents(enrollments.map(e => {
                         const student = e.students;
                         const report = reports?.find(r => r.student_id === student.id);
-                        return {
-                            ...student,
-                            report_id: report?.id,
-                            status: report ? 'Completed' : 'Needs Evaluation'
-                        };
-                    });
-
-                    setStudents(mappedStudents);
+                        return { ...student, report_id: report?.id, status: report ? 'Completed' : 'Needs Evaluation' };
+                    }));
                 } else {
                     setStudents([]);
                 }
             } catch (err) {
-                console.error(err);
                 setError(err.message || 'Failed to load class roster');
             } finally {
                 setLoading(false);
@@ -77,39 +55,34 @@ export default function ClassRoster() {
         fetchRoster();
     }, [classId, navigate]);
 
-    if (loading) {
-        return (
-            <div style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-                Loading roster details...
-            </div>
-        );
-    }
+    if (loading) return <div className="loading-state">Loading roster...</div>;
 
     if (error) {
         return (
-            <div style={{ padding: '2rem' }}>
-                <div style={{ background: 'var(--warning-bg)', color: 'var(--warning)', padding: '1rem', borderRadius: 'var(--radius)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <AlertCircle size={20} />
-                    <span>{error}</span>
+            <div>
+                <div className="alert alert-error" style={{ marginBottom: '1rem' }}>
+                    <AlertCircle size={18} />
+                    {error}
                 </div>
-                <Link to="/instructor" className="btn btn-secondary" style={{ marginTop: '1rem', display: 'inline-block' }}>Return to Dashboard</Link>
+                <Link to="/instructor" className="btn btn-secondary">Return to Dashboard</Link>
             </div>
         );
     }
 
     return (
         <div>
-            <div style={{ marginBottom: '2rem' }}>
-                <Link to="/instructor" style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--text-muted)', textDecoration: 'none', marginBottom: '1rem' }}>
-                    <ChevronLeft size={16} /> Back to Dashboard
-                </Link>
-                <h1 style={{ fontSize: '1.875rem', fontWeight: 'bold' }}>{classInfo?.name} Roster</h1>
-                <p style={{ color: 'var(--text-muted)' }}>Level: {classInfo?.levels?.name || 'Unknown Level'}</p>
+            <Link to="/instructor" className="back-link">
+                <ChevronLeft size={16} /> Back to Dashboard
+            </Link>
+
+            <div className="page-header">
+                <h1 className="page-title">{classInfo?.name}</h1>
+                <p className="page-subtitle">Level: {classInfo?.levels?.name || 'Unknown Level'} · {students.length} student{students.length !== 1 ? 's' : ''}</p>
             </div>
 
-            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+            <div className="card">
                 <table className="data-table">
-                    <thead style={{ background: 'var(--bg)' }}>
+                    <thead>
                         <tr>
                             <th>Student Name</th>
                             <th>Age</th>
@@ -120,23 +93,29 @@ export default function ClassRoster() {
                     <tbody>
                         {students.length === 0 ? (
                             <tr>
-                                <td colSpan="4" style={{ padding: '3rem 1rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-                                    No students are currently enrolled in this class.
+                                <td colSpan="4">
+                                    <div className="empty-state">
+                                        <div className="empty-state-title">No students enrolled</div>
+                                        <p>No students are currently enrolled in this class.</p>
+                                    </div>
                                 </td>
                             </tr>
                         ) : (
                             students.map(student => (
                                 <tr key={student.id}>
                                     <td style={{ fontWeight: 500 }}>{student.name}</td>
-                                    <td>{student.age}</td>
+                                    <td style={{ color: 'var(--text-muted)' }}>{student.age}</td>
                                     <td>
                                         <span className={`badge ${student.status === 'Completed' ? 'badge-success' : 'badge-warning'}`}>
                                             {student.status}
                                         </span>
                                     </td>
                                     <td>
-                                        <Link to={student.report_id ? `/report/${student.report_id}` : `/feedback/${student.id}?classId=${classId}`} className="btn btn-secondary" style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}>
-                                            <FileSignature size={16} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
+                                        <Link
+                                            to={student.report_id ? `/report/${student.report_id}` : `/feedback/${student.id}?classId=${classId}`}
+                                            className="btn btn-secondary btn-sm"
+                                        >
+                                            <FileSignature size={14} />
                                             {student.status === 'Completed' ? 'View Report' : 'Evaluate'}
                                         </Link>
                                     </td>
