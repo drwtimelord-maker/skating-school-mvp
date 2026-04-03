@@ -3,8 +3,19 @@
 -- Enable UUID extension
 create extension if not exists "uuid-ossp";
 
--- 1. PROFILES
+-- PRE-CLEANUP: Drop existing tables to avoid "already exists" errors during manual execution
+-- (WARNING: This deletes existing MVP data, which is safely restored via seed.sql)
+drop table if exists public.feedback_skill_results cascade;
+drop table if exists public.feedback_reports cascade;
+drop table if exists public.class_enrollments cascade;
+drop table if exists public.class_instructors cascade;
+drop table if exists public.classes cascade;
+drop table if exists public.students cascade;
+drop table if exists public.skills cascade;
+drop table if exists public.levels cascade;
 drop table if exists public.profiles cascade;
+
+-- 1. PROFILES
 create table public.profiles (
   id uuid references auth.users(id) on delete cascade not null primary key,
   full_name text not null,
@@ -12,7 +23,6 @@ create table public.profiles (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- Note: Policies are recreated further down
 -- 2. LEVELS
 create table public.levels (
   id uuid default gen_random_uuid() primary key,

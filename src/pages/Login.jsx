@@ -11,7 +11,6 @@ export default function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [fullName, setFullName] = useState('');
-    const [role, setRole] = useState('instructor');
 
     // Feedback state
     const [error, setError] = useState('');
@@ -44,7 +43,7 @@ export default function Login() {
                 setLoading(false);
                 return;
             }
-            currentRole = metaRole;
+            currentRole = metaRole || 'instructor';
         }
 
         // Route based on role
@@ -63,15 +62,14 @@ export default function Login() {
 
         if (isSignUp) {
             // --- SIGN UP FLOW ---
-            // We store the full_name and role inside options.data (user_metadata)
-            // so it's safely kept by Auth even if email confirmation prevents immediate login.
+            // We hardcode role: 'instructor' for all new signups
             const { data: authData, error: authError } = await supabase.auth.signUp({
                 email,
                 password,
                 options: {
                     data: {
                         full_name: fullName,
-                        role: role
+                        role: 'instructor'
                     }
                 }
             });
@@ -113,6 +111,11 @@ export default function Login() {
                 await ensureProfileAndRoute(authData.user);
             }
         }
+
+        // Only reset loading if we didn't redirect via success hook
+        if (!isSignUp || error) {
+            setLoading(false);
+        }
     };
 
     return (
@@ -143,33 +146,18 @@ export default function Login() {
 
                 <form onSubmit={handleSubmit}>
                     {isSignUp && (
-                        <>
-                            <div className="input-group">
-                                <label className="input-label" htmlFor="fullName">Full Name</label>
-                                <input
-                                    id="fullName"
-                                    type="text"
-                                    className="input-field"
-                                    placeholder="Jane Doe"
-                                    value={fullName}
-                                    onChange={(e) => setFullName(e.target.value)}
-                                    required
-                                />
-                            </div>
-                            <div className="input-group">
-                                <label className="input-label" htmlFor="role">Role (MVP Demo)</label>
-                                <select
-                                    id="role"
-                                    className="input-field"
-                                    value={role}
-                                    onChange={(e) => setRole(e.target.value)}
-                                    required
-                                >
-                                    <option value="instructor">Instructor</option>
-                                    <option value="admin">Administrator</option>
-                                </select>
-                            </div>
-                        </>
+                        <div className="input-group">
+                            <label className="input-label" htmlFor="fullName">Full Name</label>
+                            <input
+                                id="fullName"
+                                type="text"
+                                className="input-field"
+                                placeholder="Jane Doe"
+                                value={fullName}
+                                onChange={(e) => setFullName(e.target.value)}
+                                required
+                            />
+                        </div>
                     )}
 
                     <div className="input-group">
@@ -198,7 +186,7 @@ export default function Login() {
                         />
                     </div>
 
-                    <button type="submit" className="btn" style={{ width: '100%', marginTop: '1rem' }} disabled={loading}>
+                    <button type="submit" className="btn" style={{ width: '100%', marginTop: '1rem' }} disabled={loading || !!success}>
                         {loading ? 'Processing...' : isSignUp ? 'Sign Up' : 'Sign In'}
                     </button>
                 </form>
