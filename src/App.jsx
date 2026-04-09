@@ -7,6 +7,7 @@ import StudentFeedback from './pages/StudentFeedback';
 import AdminReports from './pages/AdminReports';
 import PrintableReport from './pages/PrintableReport';
 import Sidebar from './components/Sidebar';
+import ProtectedRoute from './components/ProtectedRoute';
 import { supabase } from './supabase';
 
 // Routes that should NOT show the sidebar
@@ -49,11 +50,31 @@ function AppShell() {
                 <Routes>
                     <Route path="/" element={<Login />} />
                     <Route path="/login" element={<Login />} />
-                    <Route path="/instructor" element={<InstructorDashboard />} />
-                    <Route path="/roster/:classId" element={<ClassRoster />} />
-                    <Route path="/feedback/:studentId" element={<StudentFeedback />} />
-                    <Route path="/admin/reports" element={<AdminReports />} />
-                    <Route path="/report/:reportId" element={<PrintableReport />} />
+                    <Route path="/instructor" element={
+                        <ProtectedRoute>
+                            <InstructorDashboard />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/roster/:classId" element={
+                        <ProtectedRoute>
+                            <ClassRoster />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/feedback/:studentId" element={
+                        <ProtectedRoute>
+                            <StudentFeedback />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/admin/reports" element={
+                        <ProtectedRoute requiredRole="admin">
+                            <AdminReports />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/report/:reportId" element={
+                        <ProtectedRoute>
+                            <PrintableReport />
+                        </ProtectedRoute>
+                    } />
                 </Routes>
             </div>
         </>
