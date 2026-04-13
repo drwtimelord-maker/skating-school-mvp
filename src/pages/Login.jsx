@@ -27,6 +27,7 @@ export default function Login() {
             const { full_name, role: metaRole } = user.user_metadata;
             const { error: insertError } = await supabase.from('profiles').insert({
                 id: user.id,
+                email: user.email,
                 full_name: full_name || 'New User',
                 role: metaRole || 'instructor'
             });

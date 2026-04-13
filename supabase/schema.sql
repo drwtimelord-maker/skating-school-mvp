@@ -21,6 +21,7 @@ create type user_role as enum ('instructor', 'admin');
 -- 1. PROFILES
 create table public.profiles (
   id uuid references auth.users(id) on delete cascade not null primary key,
+  email text,
   full_name text not null,
   role user_role not null default 'instructor',
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
