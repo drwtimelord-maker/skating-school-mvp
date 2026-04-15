@@ -8,10 +8,22 @@ export default function PrintableReport() {
     const [report, setReport] = useState(null);
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [userRole, setUserRole] = useState(null);
 
     useEffect(() => {
         async function loadReport() {
             if (!reportId) return;
+
+            // Fetch current user's role to determine back button destination
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', user.id)
+                    .single();
+                setUserRole(profile?.role);
+            }
 
             const { data: rep } = await supabase
                 .from('feedback_reports')
@@ -51,9 +63,15 @@ export default function PrintableReport() {
     return (
         <div style={{ padding: '0 2rem' }}>
             <div className="dev-nav" style={{ padding: '1rem 0', margin: 0, border: 'none', display: 'flex', justifyContent: 'space-between' }}>
-                <Link to={`/roster/${report.class_id}`} style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--text-muted)', textDecoration: 'none' }}>
-                    <ChevronLeft size={16} /> Back to Roster
-                </Link>
+                {userRole === 'parent' ? (
+                    <Link to="/parent" style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--text-muted)', textDecoration: 'none' }}>
+                        <ChevronLeft size={16} /> Back to My Skaters
+                    </Link>
+                ) : (
+                    <Link to={`/roster/${report.class_id}`} style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--text-muted)', textDecoration: 'none' }}>
+                        <ChevronLeft size={16} /> Back to Roster
+                    </Link>
+                )}
                 <button onClick={handlePrint} className="btn" style={{ padding: '0.5rem 1rem' }}>
                     <Printer size={16} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
                     Print Report
