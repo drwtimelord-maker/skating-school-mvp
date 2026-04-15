@@ -16,7 +16,7 @@ drop table if exists public.levels cascade;
 drop table if exists public.profiles cascade;
 
 drop type if exists user_role cascade;
-create type user_role as enum ('instructor', 'admin');
+create type user_role as enum ('instructor', 'admin', 'parent');
 
 -- 1. PROFILES
 create table public.profiles (
@@ -44,7 +44,8 @@ create table public.skills (
 create table public.students (
   id uuid default gen_random_uuid() primary key,
   name text not null,
-  age integer not null
+  age integer not null,
+  parent_id uuid references public.profiles(id)
 );
 
 -- 5. CLASSES

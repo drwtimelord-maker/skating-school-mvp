@@ -12,6 +12,7 @@
 export function getRoleRedirect(role) {
   if (role === 'admin') return '/admin/reports';
   if (role === 'instructor') return '/instructor';
+  if (role === 'parent') return '/parent';
   return '/login';
 }
 

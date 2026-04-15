@@ -9,6 +9,7 @@ export default function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [fullName, setFullName] = useState('');
+    const [signUpRole, setSignUpRole] = useState('instructor');
 
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -29,7 +30,7 @@ export default function Login() {
                 id: user.id,
                 email: user.email,
                 full_name: full_name || 'New User',
-                role: metaRole || 'instructor'
+                role: metaRole || signUpRole
             });
             if (insertError) {
                 setError('Login successful, but profile setup failed: ' + insertError.message);
@@ -41,6 +42,8 @@ export default function Login() {
 
         if (currentRole === 'admin') {
             navigate('/admin/reports');
+        } else if (currentRole === 'parent') {
+            navigate('/parent');
         } else {
             navigate('/instructor');
         }
@@ -56,7 +59,7 @@ export default function Login() {
             const { data: authData, error: authError } = await supabase.auth.signUp({
                 email,
                 password,
-                options: { data: { full_name: fullName, role: 'instructor' } }
+                options: { data: { full_name: fullName, role: signUpRole } }
             });
 
             if (authError) { setError(authError.message); setLoading(false); return; }
@@ -124,6 +127,19 @@ export default function Login() {
                                     required
                                 />
                             </div>
+                            <div className="input-group">
+                                <label className="input-label" htmlFor="signUpRole">I am a...</label>
+                                <select
+                                    id="signUpRole"
+                                    className="input-field"
+                                    value={signUpRole}
+                                    onChange={(e) => setSignUpRole(e.target.value)}
+                                >
+                                    <option value="instructor">Instructor</option>
+                                    <option value="parent">Parent</option>
+                                </select>
+                            </div>
+                        </>
                         )}
 
                         <div className="input-group">

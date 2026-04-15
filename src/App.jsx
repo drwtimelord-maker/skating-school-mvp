@@ -7,6 +7,7 @@ import StudentFeedback from './pages/StudentFeedback';
 import AdminReports from './pages/AdminReports';
 import PrintableReport from './pages/PrintableReport';
 import SkillsManager from './pages/SkillsManager';
+import ParentDashboard from './pages/ParentDashboard';
 import Sidebar from './components/Sidebar';
 import ProtectedRoute from './components/ProtectedRoute';
 import { supabase } from './supabase';
@@ -51,6 +52,11 @@ function AppShell() {
                 <Routes>
                     <Route path="/" element={<Login />} />
                     <Route path="/login" element={<Login />} />
+                    <Route path="/parent" element={
+                        <ProtectedRoute requiredRole="parent">
+                            <ParentDashboard />
+                        </ProtectedRoute>
+                    } />
                     <Route path="/instructor" element={
                         <ProtectedRoute>
                             <InstructorDashboard />

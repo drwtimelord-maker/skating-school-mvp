@@ -39,6 +39,14 @@ export default function Sidebar({ role }) {
                             Skills & Levels
                         </Link>
                     </>
+                ) : role === 'parent' ? (
+                    <Link
+                        to="/parent"
+                        className={`sidebar-link active`}
+                    >
+                        <LayoutDashboard size={18} />
+                        My Skaters
+                    </Link>
                 ) : (
                     <>
                         <Link
