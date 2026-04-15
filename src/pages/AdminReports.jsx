@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '../supabase';
 
 export default function AdminReports() {
@@ -85,12 +86,12 @@ export default function AdminReports() {
                                     <td>{report.classes?.name}</td>
                                     <td style={{ color: 'var(--text-secondary)' }}>{report.profiles?.full_name}</td>
                                     <td>
-                                        <a
-                                            href={`/report/${report.id}`}
+                                        <Link
+                                            to={`/report/${report.id}`}
                                             className="btn btn-secondary btn-sm"
                                         >
                                             View Report
-                                        </a>
+                                        </Link>
                                     </td>
                                 </tr>
                             ))
