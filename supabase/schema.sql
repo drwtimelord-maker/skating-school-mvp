@@ -120,3 +120,10 @@ create policy "Allow update for auth users" on public.feedback_reports for updat
 
 create policy "Allow insert for auth users" on public.feedback_skill_results for insert with check (auth.role() = 'authenticated');
 create policy "Allow update for auth users" on public.feedback_skill_results for update using (auth.role() = 'authenticated');
+
+-- Write policies for levels/skills management (admin via app)
+create policy "Allow insert for auth users" on public.levels for insert with check (auth.role() = 'authenticated');
+create policy "Allow delete for auth users" on public.levels for delete using (auth.role() = 'authenticated');
+
+create policy "Allow insert for auth users" on public.skills for insert with check (auth.role() = 'authenticated');
+create policy "Allow delete for auth users" on public.skills for delete using (auth.role() = 'authenticated');

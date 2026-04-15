@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, ClipboardList, LogOut } from 'lucide-react';
+import { LayoutDashboard, ClipboardList, LogOut, Layers } from 'lucide-react';
 import { supabase } from '../supabase';
 
 export default function Sidebar({ role }) {
@@ -23,13 +23,22 @@ export default function Sidebar({ role }) {
 
             <nav className="sidebar-nav">
                 {role === 'admin' ? (
-                    <Link
-                        to="/admin/reports"
-                        className={`sidebar-link ${isActive('/admin/reports') ? 'active' : ''}`}
-                    >
-                        <ClipboardList size={18} />
-                        All Reports
-                    </Link>
+                    <>
+                        <Link
+                            to="/admin/reports"
+                            className={`sidebar-link ${isActive('/admin/reports') ? 'active' : ''}`}
+                        >
+                            <ClipboardList size={18} />
+                            All Reports
+                        </Link>
+                        <Link
+                            to="/admin/skills"
+                            className={`sidebar-link ${isActive('/admin/skills') ? 'active' : ''}`}
+                        >
+                            <Layers size={18} />
+                            Skills & Levels
+                        </Link>
+                    </>
                 ) : (
                     <>
                         <Link

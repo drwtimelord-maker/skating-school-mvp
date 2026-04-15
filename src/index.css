@@ -616,6 +616,23 @@ textarea.input-field {
 }
 
 /* =============================================
+   SKILLS MANAGER HOVER EFFECTS
+   ============================================= */
+
+.skill-row:hover {
+  background: var(--surface-low);
+}
+
+.skill-row button {
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.skill-row:hover button {
+  opacity: 1;
+}
+
+/* =============================================
    PRINT STYLES
    ============================================= */
 
