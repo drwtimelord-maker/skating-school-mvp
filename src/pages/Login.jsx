@@ -115,31 +115,32 @@ export default function Login() {
 
                     <form onSubmit={handleSubmit}>
                         {isSignUp && (
-                            <div className="input-group">
-                                <label className="input-label" htmlFor="fullName">Full Name</label>
-                                <input
-                                    id="fullName"
-                                    type="text"
-                                    className="input-field"
-                                    placeholder="Jane Doe"
-                                    value={fullName}
-                                    onChange={(e) => setFullName(e.target.value)}
-                                    required
-                                />
-                            </div>
-                            <div className="input-group">
-                                <label className="input-label" htmlFor="signUpRole">I am a...</label>
-                                <select
-                                    id="signUpRole"
-                                    className="input-field"
-                                    value={signUpRole}
-                                    onChange={(e) => setSignUpRole(e.target.value)}
-                                >
-                                    <option value="instructor">Instructor</option>
-                                    <option value="parent">Parent</option>
-                                </select>
-                            </div>
-                        </>
+                            <>
+                                <div className="input-group">
+                                    <label className="input-label" htmlFor="fullName">Full Name</label>
+                                    <input
+                                        id="fullName"
+                                        type="text"
+                                        className="input-field"
+                                        placeholder="Jane Doe"
+                                        value={fullName}
+                                        onChange={(e) => setFullName(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                                <div className="input-group">
+                                    <label className="input-label" htmlFor="signUpRole">I am a...</label>
+                                    <select
+                                        id="signUpRole"
+                                        className="input-field"
+                                        value={signUpRole}
+                                        onChange={(e) => setSignUpRole(e.target.value)}
+                                    >
+                                        <option value="instructor">Instructor</option>
+                                        <option value="parent">Parent</option>
+                                    </select>
+                                </div>
+                            </>
                         )}
 
                         <div className="input-group">
