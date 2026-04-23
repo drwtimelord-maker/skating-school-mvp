@@ -2,15 +2,18 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FileText, Calendar, Clock, User } from 'lucide-react';
 import { supabase } from '../supabase';
+import AIAssistant from '../components/AIAssistant';
 
 export default function ParentDashboard() {
     const [kids, setKids] = useState([]);
+    const [userId, setUserId] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         async function fetchKids() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
+            setUserId(user.id);
 
             // Fetch students assigned to this parent, plus their classes and reports
             const { data, error } = await supabase
@@ -133,6 +136,9 @@ export default function ParentDashboard() {
                     ))}
                 </div>
             )}
+
+            {/* AI Progress Assistant — RAG feature powered by Groq */}
+            {userId && <AIAssistant userId={userId} />}
         </div>
     );
 }

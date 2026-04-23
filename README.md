@@ -26,6 +26,15 @@ A session feedback app for ice skating schools. Instructors log in, complete ski
 - View all submitted feedback reports with live search/filter
 - Open a print-optimized single-student report (sidebar hidden on print)
 
+### AI Progress Assistant (RAG Feature)
+- Parents access a chat panel on their dashboard
+- Ask natural-language questions about their child's skating progress
+- **Retrieval:** The app queries Supabase for all feedback reports and skill results for the parent's children
+- **Augmentation:** The retrieved data is formatted as structured context and injected into the LLM system prompt
+- **Generation:** Groq (`llama-3.3-70b-versatile`) generates a response grounded exclusively in the real DB data
+- Responses reference actual skill names, class names, and evaluation dates — not hallucinated content
+- Context is cached per session so repeated questions don't re-query the database
+
 ---
 
 ## Tech Stack
@@ -35,6 +44,7 @@ A session feedback app for ice skating schools. Instructors log in, complete ski
 | Frontend | React 18 + Vite |
 | Routing | React Router v6 |
 | Auth + DB | Supabase (PostgreSQL + RLS) |
+| AI / LLM | Groq (`llama-3.3-70b-versatile`) |
 | Icons | Lucide React |
 | Testing | Vitest |
 | CI/Lint | ESLint |
@@ -64,6 +74,12 @@ VITE_SUPABASE_URL=https://your-project-ref.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key-here
 ```
 Get these values from your [Supabase Dashboard](https://supabase.com/dashboard) → your project → **Settings → API**.
+
+### 3b. Add your Groq API key (required for AI Progress Assistant)
+Get a free key at [console.groq.com](https://console.groq.com) → **API Keys → Create Key**, then add it to `.env.local`:
+```
+VITE_GROQ_API_KEY=your-groq-api-key-here
+```
 
 ### 4. Set up the database
 In the Supabase SQL Editor, run the contents of:
@@ -135,16 +151,19 @@ ashahi-skating/
 │   └── video-thumbnail.png
 ├── src/
 │   ├── components/
+│   │   ├── AIAssistant.jsx  # RAG chat panel (Retrieval + Groq generation)
 │   │   └── Sidebar.jsx
 │   ├── pages/
 │   │   ├── Login.jsx
 │   │   ├── InstructorDashboard.jsx
 │   │   ├── ClassRoster.jsx
 │   │   ├── StudentFeedback.jsx
+│   │   ├── ParentDashboard.jsx  # Hosts the AI Assistant
 │   │   ├── AdminReports.jsx
 │   │   └── PrintableReport.jsx
 │   ├── utils/
-│   │   └── feedbackUtils.js
+│   │   ├── feedbackUtils.js
+│   │   └── groq.js          # Groq API utility (Augmentation + Generation)
 │   ├── __tests__/
 │   │   └── feedbackUtils.test.js
 │   ├── App.jsx
